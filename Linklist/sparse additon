@@ -1,1 +1,136 @@
 
+ #include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int row, col, value;
+    struct Node* next;
+};
+
+// Create a new node
+struct Node* createNode(int r, int c, int val) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->row = r;
+    newNode->col = c;
+    newNode->value = val;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Insert node at the end
+struct Node* insertNode(struct Node* head, int r, int c, int val) {
+    if (val == 0) return head;  // skip zeros
+    struct Node* newNode = createNode(r, c, val);
+
+    if (head == NULL) {
+        return newNode;
+    }
+
+    struct Node* temp = head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = newNode;
+    return head;
+}
+
+
+// Convert a 2D matrix into a sparse linked list (1-based indexing)
+struct Node* convertToList(int rows, int cols, int mat[rows][cols]) {
+    struct Node* head = NULL;
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (mat[i][j] != 0) { 
+                head = insertNode(head, i+1, j+1, mat[i][j]);  // 1-based indexing
+            }
+        }
+    }
+    return head;
+}
+
+
+// Display linked list
+void display(struct Node* head) {
+    printf("Result (A + B):\n");
+    while (head) {
+        printf("(%d, %d, %d) -> ", head->row, head->col, head->value);
+        head = head->next;
+    }
+    printf("NULL\n");
+}
+
+// Add two sparse matrices
+struct Node* addSparse(struct Node* a, struct Node* b) {
+    struct Node* result = NULL;
+
+    while (a && b) {
+        if (a->row == b->row && a->col == b->col) {
+            int sum = a->value + b->value;
+            if (sum != 0)
+                result = insertNode(result, a->row, a->col, sum);
+            a = a->next;
+            b = b->next;
+        }  
+        else if ((a->row < b->row) || (a->row == b->row && a->col < b->col)) {
+            result = insertNode(result, a->row, a->col, a->value);
+            a = a->next;
+        } 
+        else {
+            result = insertNode(result, b->row, b->col, b->value);
+            b = b->next;
+        }
+    }
+
+    while (a) {
+        result = insertNode(result, a->row, a->col, a->value);
+        a = a->next;
+    }
+    while (b) {
+        result = insertNode(result, b->row, b->col, b->value);
+        b = b->next;
+    }
+
+    return result;
+}
+ 
+// Free linked list memory
+void freeList(struct Node* head) {
+    while (head) {
+        struct Node* temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+// Driver code
+int main() {
+    int rows = 4, cols = 4;
+
+    int matA[4][4] = {
+        {0, 0, 5, 0},
+        {0, 1, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 2, 0}
+    };
+
+    int matB[4][4] = {
+        {0, 0, 0, 0},
+        {0, 3, 0, 1},
+        {0, 0, 0, 0},
+        {0, 0, 5, 0}
+    };
+
+    struct Node* a = convertToList(rows, cols, matA);
+    struct Node* b = convertToList(rows, cols, matB);
+
+    struct Node* result = addSparse(a, b);
+
+    display(result);
+
+    // Free memory
+    freeList(a);
+    freeList(b);
+    freeList(result);
+
+    return 0;
+}
