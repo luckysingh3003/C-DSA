@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+struct Node {
+    char name[20];
+    int age;
+    struct Node* nextByName;
+    struct Node* nextByAge;
+};
+ 
+struct Node* createNode(char* name, int age) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    strcpy(newNode->name, name);
+    newNode->age = age;
+    newNode->nextByName = NULL;
+    newNode->nextByAge = NULL;
+    return newNode;
+}
+ 
+struct Node* insertByName(struct Node* head, struct Node* newNode) {
+    if (head == NULL || strcmp(newNode->name, head->name) < 0) {
+        newNode->nextByName = head;
+        head = newNode;
+    } else {
+        struct Node* current = head;
+        while (current->nextByName && strcmp(current->nextByName->name, newNode->name) < 0) {
+            current = current->nextByName;
+        }
+        newNode->nextByName = current->nextByName;
+        current->nextByName = newNode;
+    }
+    return head;
+}
+ 
+struct Node* insertByAge(struct Node* head, struct Node* newNode) {
+    if (head == NULL || newNode->age < head->age) {
+        newNode->nextByAge = head;
+        head = newNode;
+    } else {
+        struct Node* current = head;
+        while (current->nextByAge && current->nextByAge->age < newNode->age) {
+            current = current->nextByAge;
+        }
+        newNode->nextByAge = current->nextByAge;
+        current->nextByAge = newNode;
+    }
+    return head;
+}
+ 
+void traverseByName(struct Node* head) {
+    printf("\nList by Name:\n");
+    while (head) {
+        printf("(%s, %d) -> ", head->name, head->age);
+        head = head->nextByName;
+    }
+    printf("NULL\n");
+}
+ 
+void traverseByAge(struct Node* head) {
+    printf("\nList by Age:\n");
+    while (head) {
+        printf("(%s, %d) -> ", head->name, head->age);
+        head = head->nextByAge;
+    }
+    printf("NULL\n");
+}
+ 
+int main() {
+    struct Node* headByName = NULL;
+    struct Node* headByAge = NULL;
+
+    char* names[] = {"Animesh", "Sumit", "Hardik", "Isha"};
+    int ages[] = {19, 17, 22, 18};
+
+    for (int i = 0; i < 4; i++) {
+        struct Node* newNode = createNode(names[i], ages[i]);
+
+        headByName = insertByName(headByName, newNode);
+        headByAge = insertByAge(headByAge, newNode);
+    }
+
+    traverseByName(headByName);
+    traverseByAge(headByAge);
+
+    return 0;
+}
